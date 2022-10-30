@@ -1,5 +1,8 @@
-import React from 'react';
-const Home: React.FC = () => {
+import { FC } from 'react';
+import MatchesBoard from './MatchesBoard/index';
+import ScoresBoard from './ScoresBoard/index';
+
+const Home: FC = () => {
     return (
         <section
             style={{
@@ -7,8 +10,8 @@ const Home: React.FC = () => {
                 gridTemplateColumns: "auto auto",
             }}
         >
-            <h1>Matches</h1>
-            <h1>Scores Board</h1>
+            <MatchesBoard />
+            <ScoresBoard />
         </section>
     )
 }
