@@ -1,10 +1,18 @@
-import { FC } from 'react';
-import { SharedImage } from '../../utils/SharedImage';
-import team1 from '../../public/static/1.png';
+import { FC, useContext } from 'react';
+import { SharedImage } from '../../utils/components/SharedImage';
 import { IGameStatsCard } from './types'
-import { SharedButton } from '../../utils/SharedButton';
+import { SharedButton } from '../../utils/components/SharedButton';
 import { imagesIconsOptions } from '../../utils/loadImages';
+import team1 from '../../public/static/1.png';
+import { FootballContext } from '../../Context/FootballContext';
+import { EmptyTeamsList } from '../../utils/components/EmptyTeamsList';
+import { UploadTeams } from '../../utils/components/UploadMatches';
+import { matchesProp } from '../../Context/types';
 
+
+type teamsInfo = {
+    teams: matchesProp,
+}
 
 const GameStatsCard: FC<IGameStatsCard> = (props: IGameStatsCard) => {
     return (
@@ -25,7 +33,9 @@ const GameStatsCard: FC<IGameStatsCard> = (props: IGameStatsCard) => {
     );
 };
 
-const GameStatsResult: FC = () => {
+const GameStatsResult: FC<teamsInfo> = (props: teamsInfo) => {
+    console.log(props.teams);
+    console.log(props.teams);
     return (
         <div
             style={{
@@ -36,19 +46,19 @@ const GameStatsResult: FC = () => {
                 time={"00:00"}
                 goals={2}
                 image={team1}
-                alt="Team A"
+                alt={`${props.teams} image`}
                 width={40}
                 height={40}
-                team="team A"
+                team={`${props.teams.teamA}`}
             />
             <GameStatsCard
                 time={"00:00"}
                 goals={2}
                 image={team1}
-                alt="Team A"
+                alt={`${props.teams.teamB} image`}
                 width={40}
                 height={40}
-                team="team b"
+                team={`${props.teams.teamB}`}
             />
         </div>
     )
@@ -73,21 +83,32 @@ const GameOptionsButton: FC = () => {
 };
 
 export const GameStatsBoard: FC = () => {
+    const { matches } = useContext(FootballContext);
+    
     return (
-        <section>
-            <div style={{
-                width: "80%",
-                textAlign: "center",
-                background: "antiquewhite",
-                borderRadius: "2px",
-                marginBottom: '3px',
-                padding: "10px 0px",
-            }}
-            >
-                <span>Time: 00:00</span>
-                <GameStatsResult />
-                <GameOptionsButton />
-            </div>
+        <section style={{ background: "antiquewhite" }}>
+            {
+                matches.length === 0
+                    ?
+                        <EmptyTeamsList />
+                    :
+                        matches.map((item, index) => (
+                            <div style={{
+                                textAlign: "center",
+                                borderRadius: "2px",
+                                marginBottom: '3px',
+                                padding: "10px 0px",
+                                backgroundColor: "azure"
+                            }}
+                                key={index}
+                            >
+                                <span>Time: 00:00</span>
+                                <GameStatsResult teams={item} />
+                                <GameOptionsButton />
+                            </div>
+                        ))
+            }
+            <UploadTeams />
         </section>
     );
 };
