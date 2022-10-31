@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { IimageProps } from './types';
 
+import { IimageProps } from '../types';
 import { SharedImage } from './SharedImage';
 
 export const SharedButton: FC<IimageProps> = (props: IimageProps) => {

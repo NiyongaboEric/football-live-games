@@ -1,6 +1,7 @@
 import { FC } from 'react';
+
 import Image from 'next/image';
-import { IimageProps } from './types';
+import { IimageProps } from '.././types';
 
 export const SharedImage: FC<IimageProps> = (props: IimageProps) => {
     return (
