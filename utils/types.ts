@@ -10,4 +10,6 @@ export interface IimageProps {
     height: number;
     alt: string;
     image: StaticImageData;
-}
+} 
+
+export type IButtonOption = IimageProps & { handleClick: () => void }

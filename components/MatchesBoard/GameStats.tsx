@@ -1,6 +1,7 @@
-import { FC, useContext } from 'react';
+import { FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
 import { SharedImage } from '../../utils/components/SharedImage';
-import { IGameStatsCard } from './types'
+import { IGameStatsCard, teamsInfo, matchesInfo, gameOptionType } from './types'
 import { SharedButton } from '../../utils/components/SharedButton';
 import { imagesIconsOptions } from '../../utils/loadImages';
 import team1 from '../../public/static/1.png';
@@ -8,11 +9,7 @@ import { FootballContext } from '../../Context/FootballContext';
 import { EmptyTeamsList } from '../../utils/components/EmptyTeamsList';
 import { UploadTeams } from '../../utils/components/UploadMatches';
 import { matchesProp } from '../../Context/types';
-
-
-type teamsInfo = {
-    teams: matchesProp,
-}
+import { useClockTimer } from '../../utils/useClockTimer';
 
 const GameStatsCard: FC<IGameStatsCard> = (props: IGameStatsCard) => {
     return (
@@ -34,8 +31,6 @@ const GameStatsCard: FC<IGameStatsCard> = (props: IGameStatsCard) => {
 };
 
 const GameStatsResult: FC<teamsInfo> = (props: teamsInfo) => {
-    console.log(props.teams);
-    console.log(props.teams);
     return (
         <div
             style={{
@@ -46,45 +41,139 @@ const GameStatsResult: FC<teamsInfo> = (props: teamsInfo) => {
                 time={"00:00"}
                 goals={2}
                 image={team1}
-                alt={`${props.teams} image`}
+                alt={`${props.matches} image`}
                 width={40}
                 height={40}
-                team={`${props.teams.teamA}`}
+                team={`${props.matches.teamA}`}
             />
             <GameStatsCard
                 time={"00:00"}
                 goals={2}
                 image={team1}
-                alt={`${props.teams.teamB} image`}
+                alt={`${props.matches.teamB} image`}
                 width={40}
                 height={40}
-                team={`${props.teams.teamB}`}
+                team={`${props.matches.teamB}`}
             />
         </div>
     )
 }
-const GameOptionsButton: FC = () => {
+
+const GameOptionsButton: FC<gameOptionType> = ({ currentMatch, addStartMatchClockTimer, handleUpdateTime }) => {
+    // const { handleUpdateTime } = useContext(FootballContext);
+    // const { countHours, countMinutes, countSeconds } = useClockTimer(60, currentMatch);
+    // useClockTimer(60, currentMatch, handleUpdateTime);
+    // useEffect(() => {
+    //     //
+    //     // 
+    //     handleUpdateTime({ countHours, countMinutes, countSeconds }, currentMatch.id )
+    // }, [countHours, countMinutes, countSeconds, currentMatch.id, handleUpdateTime]);
+    // // [countHours, countMinutes, countSeconds, currentMatch.id, handleUpdateTime]
+
+    const [countSeconds, setCountSeconds] = useState<number>(0);
+    const [countMinutes, setCountMinutes] = useState<number>(0);
+    const [countHours, setCountHours] = useState<number>(0);
+
+    useEffect(
+        () => {
+            if (!currentMatch.isGameStarted) return
+
+            const timer = () => {
+                setCountSeconds(countSeconds + 1);
+            }
+
+            // 60 seconds is equal to 1 minute
+            if (countSeconds === 60) {
+                setCountMinutes((prev: number): number => (prev + 1))
+                setCountSeconds(0);
+            }
+
+            // 60 minutes is equal to 1 hour
+            if (countMinutes === 60 ) {
+                setCountHours((prev: number): number => (prev + 1))
+                setCountMinutes(0);
+            }
+            
+            const id = setInterval(timer, 1000);
+            return () => clearInterval(id);
+        }, [countHours, countMinutes, countSeconds, currentMatch, handleUpdateTime]
+        );
+        
+        useCallback(() => handleUpdateTime({
+            countHours, countMinutes, countSeconds 
+        },
+        currentMatch.id
+        ), [countHours, countMinutes, countSeconds, currentMatch.id, handleUpdateTime]);
+
+
+
+    
     return (
         <div style={{ margin: "15px 0" }}>
-            {
-                imagesIconsOptions.map((image, index) => (
-                    <SharedButton
-                        image={image.icon}
-                        alt={image.name}
-                        key={index}
-                        width={20}
-                        height={20}
-                    />
-                )
-                )
-            }
+            <SharedButton
+                image={imagesIconsOptions[0].icon}
+                alt={imagesIconsOptions[0].name}
+                width={20}
+                height={20}
+                handleClick={() => addStartMatchClockTimer(currentMatch.id )}
+            />
+            <SharedButton
+                image={imagesIconsOptions[1].icon}
+                alt={imagesIconsOptions[1].name}
+                width={20}
+                height={20}
+                handleClick={() => true}
+            />
+            <SharedButton
+                image={imagesIconsOptions[2].icon}
+                alt={imagesIconsOptions[2].name}
+                width={20}
+                height={20}
+                handleClick={() => true}
+            />
+            <SharedButton
+                image={imagesIconsOptions[3].icon}
+                alt={imagesIconsOptions[3].name}
+                width={20}
+                height={20}
+                handleClick={() => true}
+            />
         </div>
     );
 };
 
+const GameStatsBoardMain: FC<matchesInfo> = (props: matchesInfo) => {
+    return (
+        <>
+            {
+                props.matches.map((match: matchesProp, index: number) => (
+                    <div style={{
+                        textAlign: "center",
+                        borderRadius: "2px",
+                        marginBottom: '3px',
+                        padding: "10px 0px",
+                        backgroundColor: "azure"
+                    }}
+                        key={index}
+                    >
+                        <span>Time: {match.currentTime}</span>
+                        <GameStatsResult matches={match} />
+                        <GameOptionsButton 
+                            currentMatch={match} 
+                            addStartMatchClockTimer={props.addStartMatchClockTimer}
+                            handleUpdateTime={props.handleUpdateTime}
+                        />
+                    </div>
+                ))
+            }
+        </>
+    );
+};
+
 export const GameStatsBoard: FC = () => {
-    const { matches } = useContext(FootballContext);
-    
+    const { matches, addStartMatchClockTimer, handleUpdateTime } = useContext(FootballContext);
+    // console.log(matches);
+
     return (
         <section style={{ background: "antiquewhite" }}>
             {
@@ -92,21 +181,11 @@ export const GameStatsBoard: FC = () => {
                     ?
                         <EmptyTeamsList />
                     :
-                        matches.map((item, index) => (
-                            <div style={{
-                                textAlign: "center",
-                                borderRadius: "2px",
-                                marginBottom: '3px',
-                                padding: "10px 0px",
-                                backgroundColor: "azure"
-                            }}
-                                key={index}
-                            >
-                                <span>Time: 00:00</span>
-                                <GameStatsResult teams={item} />
-                                <GameOptionsButton />
-                            </div>
-                        ))
+                        <GameStatsBoardMain 
+                            matches={matches}
+                            addStartMatchClockTimer={addStartMatchClockTimer}
+                            handleUpdateTime={handleUpdateTime}
+                        />
             }
             <UploadTeams />
         </section>
